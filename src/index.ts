@@ -52,6 +52,36 @@ export default {
 
 				await env.KV.put(shop, accessToken);
 
+				const cartTransformCreateMutation = `
+					mutation {
+						cartTransformCreate(functionId: "b16e3cd3-039d-48fe-a63d-cc1919693853") {
+							cartTransform {
+								id
+							}
+							userErrors {
+								message
+							}
+						}
+					}
+				`;
+
+				const graphqlUrl = `https://${shop}/admin/api/2023-07/graphql.json`;
+				const graphqlResponse = await fetch(graphqlUrl, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-Shopify-Access-Token': accessToken,
+					},
+					body: JSON.stringify({
+						query: cartTransformCreateMutation,
+					}),
+				});
+
+				if (!graphqlResponse.ok) {
+					console.error('Failed to send cartTransformCreate mutation:', await graphqlResponse.text());
+					return new Response('Failed to send cartTransformCreate mutation', { status: 500 });
+				}
+
 				return Response.redirect(env.FORWARDING_ADDRESS);
 			}
 
